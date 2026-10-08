@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-app="can-analyzer">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}can-analyzer · bus trace{% endblock %}</title>
+<style>
+:root{--bg:#07090b;--panel:#101418;--line:#1e262d;--ink:#e2e8ec;--dim:#7a8792;--green:#39d98a;--amber:#e3b341;--red:#f0605e;--blue:#4b9fd5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:12.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;display:flex;flex-direction:column;min-height:100vh}
+header{display:flex;align-items:center;gap:16px;padding:9px 18px;border-bottom:1px solid var(--line);background:#0c1013;position:sticky;top:0;z-index:5}
+header .brand{font-weight:700;letter-spacing:.05em;color:var(--green)}
+header .brand:before{content:"● ";color:var(--dim)}
+header nav{display:flex;gap:14px;font-size:12px}
+header nav a{color:var(--dim);text-decoration:none}
+header nav a:hover{color:var(--green)}
+header .right{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:11.5px}
+main{flex:1;padding:16px 18px 30px;max-width:1240px;width:100%;margin:0 auto}
+h2{font-size:14px;font-weight:650}
+h4{font-size:11px;font-weight:650;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:13px;margin-bottom:11px}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+.row:last-child{margin-bottom:0}
+.sp{flex:1}
+.mono{font-family:inherit;font-size:11.5px}
+.dim{color:var(--dim)}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;color:var(--dim);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em}
+td{padding:6px 8px;border-bottom:1px solid #141a1f;font-family:ui-monospace,Consolas,monospace;font-size:11.5px}
+tr:hover td{background:#151b20}
+input,select,button{font:inherit}
+input,select{background:#07090b;border:1px solid var(--line);border-radius:4px;color:var(--ink);padding:6px 9px;font-size:11.5px}
+button,.btn{background:var(--green);color:#04231a;border:none;border-radius:4px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer}
+button:hover{opacity:.88}
+button.ghost,.btn.g{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:500}
+button.danger,.btn.r{background:transparent;border:1px solid var(--red);color:var(--red);font-weight:500}
+button.play{background:transparent;border:1px solid var(--blue);color:var(--blue);font-weight:600}
+[disabled]{opacity:.4;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:2px 8px;font-size:10.5px;color:var(--dim)}
+.tag.g{border-color:var(--green);color:var(--green)}
+.tag.y{border-color:var(--amber);color:var(--amber)}
+.tag.b{border-color:var(--blue);color:var(--blue)}
+.pill{display:flex;gap:18px;flex-wrap:wrap}
+.pill div b{display:block;font-size:19px;font-weight:650;letter-spacing:-.02em}
+.pill div span{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.code{background:#07090b;border:1px solid var(--line);border-radius:4px;padding:9px;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--dim);white-space:pre-wrap;word-break:break-word;overflow-x:auto;max-height:260px}
+.scroll{max-height:340px;overflow:auto}
+footer{border-top:1px solid var(--line);padding:11px 18px;color:var(--dim);font-size:11px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+footer a{color:var(--dim)}
+footer a:hover{color:var(--green)}
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">can-analyzer</span>
+  <nav>{% block nav %}<a href="{{ url_for('index') }}">Trace</a><a href="#signals">Signals</a>{% endblock %}</nav>
+  <span class="right">{% block navright %}
+    <span class="tag b">{{ log_count }} log(s)</span>
+    <span class="tag{% if active_log %} g{% endif %}" id="dbc-tag">dbc: {{ dbc_name if active_log else 'not loaded' }}</span>
+  {% endblock %}</span>
+</header>
+<main>
+{% block content %}{% endblock %}
+</main>
+<footer>
+  <span>can-analyzer 0.1.0</span>
+  <span class="dim">data dir {{ data_dir }}</span>
+  <span class="sp"></span>
+  <a href="{{ url_for('api_health') }}">/api/health</a>
+  <a href="{{ url_for('api_config') }}">/api/config</a>
+  {% if active_log %}
+  <a href="{{ url_for('can.messages', id=active_log) }}">/api/logs/{{ active_log }}/messages</a>
+  <a href="{{ url_for('can.export', id=active_log) }}">/api/logs/{{ active_log }}/export</a>
+  {% endif %}
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

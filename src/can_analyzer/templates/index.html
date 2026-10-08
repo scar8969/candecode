@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Trace · {{ app_name }}{% endblock %}
+{% block nav %}<a href="{{ url_for('index') }}">Trace</a><a href="{{ url_for('index') }}#signals">Signals</a><a href="{{ url_for('index') }}#logs">Logs</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="pill">
+    <div><b>{{ log_count }}</b><span>logs</span></div>
+    <div><b id="stat-frames">{{ log_files[0].frame_count if log_files else 0 }}</b><span>frames in latest</span></div>
+    <div><b>{{ messages | length }}</b><span>messages shown</span></div>
+    <div><b>{{ signals | length }}</b><span>signals seen</span></div>
+  </div>
+  <div class="mono dim" style="margin-top:9px" id="state-line">{{ log }}</div>
+</div>
+
+<div class="row">
+  <form class="card row" id="upload-form" method="post" action="{{ url_for('can.upload') }}" enctype="multipart/form-data" style="flex:1;margin-bottom:0">
+    <label for="log-file" class="dim">log</label>
+    <input type="file" id="log-file" name="file" accept=".asc,.csv">
+    <input name="format" type="hidden" value="{{ 'csv' if log_name.endswith('.csv') else 'asc' }}">
+    <input name="name" value="{{ log_name }}">
+    <button class="btn" id="upload-log" type="submit">Upload log</button>
+  </form>
+  <form class="card row" method="post" action="{{ url_for('can.upload_dbc', id=active_log or 0) }}" enctype="multipart/form-data" style="flex:1;margin-bottom:0">
+    <label for="dbc-file" class="dim">dbc</label>
+    <input type="file" id="dbc-file" name="file" accept=".dbc"{% if not active_log %} disabled{% endif %}>
+    <button class="btn g" id="upload-dbc" type="submit"{% if not active_log %} disabled{% endif %}>Attach DBC</button>
+    <span class="mono dim">→ /api/logs/{{ active_log or 0 }}/dbc</span>
+  </form>
+</div>
+
+<div class="card" id="logs">
+  <h4>uploaded logs</h4>
+  <table>
+    <tr><th>id</th><th>name</th><th>format</th><th>frames</th><th>uploaded</th><th>actions</th></tr>
+    {% for l in log_files %}
+    <tr><td>{{ l.id }}</td><td>{{ l.name }}</td><td><span class="tag">{{ l.format }}</span></td>
+        <td>{{ l.frame_count }}</td><td class="dim">{{ l.uploaded_at }}</td>
+        <td>
+          <a href="{{ url_for('index', log_id=l.id) }}">frame it</a>
+          <form method="post" action="{{ url_for('replay_log', lid=l.id) }}" style="display:inline">
+            <button class="play" id="replay-btn" type="submit"{% if not stop_enabled %} disabled{% endif %}>▶ replay</button>
+          </form>
+          <a href="{{ url_for('can.export', id=l.id) }}">export csv</a>
+        </td></tr>
+    {% else %}
+    <tr><td colspan="6" class="dim">no rows in log_files yet — upload a .asc/.csv or POST {{ url_for('can.upload') }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <div class="row">
+    <h2 style="flex:1">decoded messages</h2>
+    <form method="get" action="{{ url_for('index') }}" class="row" style="margin:0">
+      <input type="hidden" name="log_id" value="{{ active_log }}">
+      <label for="log-filter" class="dim">can_id</label>
+      <input id="log-filter" name="filter" value="{{ filter_value }}">
+      <button class="btn g" id="refresh" type="submit">filter</button>
+    </form>
+    <form method="post" action="{{ url_for('stop_log', lid=active_log or 0) }}" style="margin:0">
+      <button class="btn r" id="stop-btn" type="submit"{% if not stop_enabled %} disabled{% endif %}>■ stop replay</button>
+    </form>
+  </div>
+  <div class="scroll">
+  <table>
+    <tr><th>ts</th><th>can_id</th><th>data</th><th>decoded</th></tr>
+    {% for m in messages %}
+    <tr><td>{{ m.t }}</td><td>{{ m.can_id }}</td><td>{{ m.data_hex }}</td><td class="dim">{{ m.decoded }}</td></tr>
+    {% else %}
+    <tr><td colspan="4" class="dim">{{ messages_note }}</td></tr>
+    {% endfor %}
+  </table>
+  </div>
+</div>
+
+<div class="card" id="signals">
+  <div class="row">
+    <h2 style="flex:1">signal series</h2>
+    <label for="signal-select" class="dim">signal</label>
+    <select id="signal-select" name="signal">
+      {% for s in signals %}<option value="{{ s }}"{% if s == active_signal %} selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+    {% if active_log %}<a href="{{ url_for('can.signal_series', id=active_log, name=active_signal) }}"><button class="btn g" id="signal-btn" type="button">load series</button></a>{% endif %}
+    {% if active_log %}<a href="{{ url_for('can.export', id=active_log) }}"><button class="btn" id="export-csv" type="button">export CSV</button></a>{% endif %}
+  </div>
+  <div class="code" id="series-output">{{ signals | join(' | ') if signals else 'no signals: attach a DBC and re-upload the log to decode' }}</div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}" defer></script>{% endblock %}

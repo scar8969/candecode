@@ -1,0 +1,35 @@
+openapi: 3.0.0
+info:
+  title: "🚗 can-analyzer"
+  version: 0.1.0
+paths:
+  /api/logs:
+    post:
+      summary: upload log
+      responses:
+        "200":
+          description: ok
+  /api/logs/<id>/dbc:
+    post:
+      summary: upload dbc
+      responses:
+        "200":
+          description: ok
+  /api/logs/<id>/messages:
+    get:
+      summary: messages
+      responses:
+        "200":
+          description: ok
+  /api/logs/<id>/signals/<name>:
+    get:
+      summary: signal series
+      responses:
+        "200":
+          description: ok
+  /api/logs/<id>/export:
+    get:
+      summary: CSV
+      responses:
+        "200":
+          description: ok
