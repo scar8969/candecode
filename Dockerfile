@@ -34,7 +34,7 @@ RUN groupadd --system --gid 1001 app \
 WORKDIR /app
 
 COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels c3-can-analyzer \
+RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels candecode \
  && rm -rf /wheels \
  && mkdir -p /var/lib/can_analyzer/instance /var/lib/can_analyzer/log \
  && chown -R app:app /var/lib/can_analyzer /app

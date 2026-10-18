@@ -3,13 +3,13 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "c3-can-analyzer"
+name = "candecode"
 version = "0.1.0"
-description = "A Flask CAN bus analyzer. It parses ASC and CSV candump logs, loads a DBC file,"
+description = "CAN bus analyzer: parse ASC and candump logs, decode against a DBC, chart signals."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "project-skeletons maintainers" }]
+authors = [{ name = "Priyanshu Rout" }]
 keywords = ["flask", "service", "can_analyzer"]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -46,7 +46,7 @@ Documentation = "https://example.invalid/can_analyzer/docs"
 Issues = "https://example.invalid/can_analyzer/issues"
 
 [project.scripts]
-c3-can-analyzer = "can_analyzer.cli:main"
+candecode = "can_analyzer.cli:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

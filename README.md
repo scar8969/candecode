@@ -1,4 +1,4 @@
-# can-analyzer
+# candecode
 
 > A Flask CAN bus analyzer. It parses ASC and CSV candump logs, loads a DBC file,
 
@@ -6,8 +6,8 @@
 [![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-c3_can_analyzer is a Flask service delivered as an installable, typed, test-covered
-distribution. The business logic is unchanged from the original skeleton; what
+candecode is a Flask service delivered as an installable, typed, test-covered
+distribution. The business logic is unchanged from the original service; what
 is new is the engineering around it: a packaging story, a configuration
 contract, structured observability, operational endpoints, a hardened
 container, and the gates that keep all of that true.
@@ -17,7 +17,7 @@ container, and the gates that keep all of that true.
 ## Quickstart
 
 ```sh
-git clone <your-fork> c3_can_analyzer && cd c3_can_analyzer
+git clone <your-fork> candecode && cd candecode
 python -m venv .venv
 . .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
@@ -133,7 +133,7 @@ variable, rather than surfacing as a confusing runtime error later.
 | `/api/logs/<id>/signals/<name>` | GET | JSON |
 | `/api/logs/<id>/signals/<name>` | T | JSON |
 
-The frozen machine-readable contract is `openapi/c3_can_analyzer.yaml`; it is the
+The frozen machine-readable contract is `openapi/candecode.yaml`; it is the
 source of truth for path and method coverage.
 
 ---
@@ -151,9 +151,9 @@ source of truth for path and method coverage.
 │   ├── ARCHITECTURE.md
 │   └── OPERATIONS.md
 ├── openapi
-│   └── c3_can_analyzer.yaml
+│   └── candecode.yaml
 ├── schema
-│   └── c3_can_analyzer.sql
+│   └── candecode.sql
 ├── src
 │   └── can_analyzer
 │       ├── can
@@ -172,7 +172,7 @@ source of truth for path and method coverage.
 │       └── py.typed
 ├── tests
 │   ├── conftest.py
-│   ├── test_c3_can_analyzer.py
+│   ├── test_candecode.py
 │   ├── test_config.py
 │   └── test_ops.py
 ├── .dockerignore

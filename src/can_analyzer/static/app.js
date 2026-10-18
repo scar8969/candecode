@@ -8,7 +8,7 @@
  * served by every page of the app and is a no-op where an element is absent.
  *
  * Endpoints used: GET /api/status and POST /api/record, both documented in
- * openapi/c3_can_analyzer.yaml.
+ * openapi/candecode.yaml.
  */
 (function () {
   "use strict";

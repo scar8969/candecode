@@ -9,7 +9,7 @@ they do, and what breaks first under load.
 
 ## 1. Context
 
-c3_can_analyzer is a single-process Flask service. It owns its own database (SQLite by
+candecode is a single-process Flask service. It owns its own database (SQLite by
 default, any SQLAlchemy-supported backend via `DATABASE_URL`) and is deployed
 behind a reverse proxy or an orchestrator.
 
@@ -74,7 +74,7 @@ flowchart TB
 | `static/app.js` | asset |
 | `templates/base.html` | asset |
 | `templates/index.html` | asset |
-| `tests/test_c3_can_analyzer.py` | module |
+| `tests/test_candecode.py` | module |
 | `_app.py` | asset |
 
 ---
@@ -137,8 +137,8 @@ writable lives under `/app`.
 
 | Table | Owner |
 | --- | --- |
-| `log_files` | owned by `c3_can_analyzer` |
-| `messages` | owned by `c3_can_analyzer` |
+| `log_files` | owned by `candecode` |
+| `messages` | owned by `candecode` |
 
 Tables are created by the application's own bootstrap on first use. No migration
 tool is wired in; the schema is additive, and the service tolerates a missing or

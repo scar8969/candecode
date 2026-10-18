@@ -77,7 +77,7 @@ process_uptime_seconds 0.515
 `/version` answered **200**:
 
 ```
-{"config":{"app_name":"can_analyzer","data_dir":"C:\\Users\\priya\\Desktop\\project-skeletons\\projects\\c3_can_analyzer\\var","database_configured":false,"debug":false,"env":"development","host":"0.0.0.0","legacy_env_present":[],"log_json":true,"log_level":"INFO","port":8000,"secret_key_configured":false},"paths":{"data_dir":"C:\\Users\\priya\\Desktop\\project-skeletons\\projects\\c3_can_analyzer
+{"config":{"app_name":"can_analyzer","data_dir":".\\var","database_configured":false,"debug":false,"env":"development","host":"0.0.0.0","legacy_env_present":[],"log_json":true,"log_level":"INFO","port":8000,"secret_key_configured":false},"paths":{"data_dir":".
 ```
 
 ## Headers observed on /healthz

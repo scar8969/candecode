@@ -1,4 +1,4 @@
-"""C3 can-analyzer — tests. Run: pytest test_c3_can_analyzer.py"""
+"""C3 can-analyzer — tests. Run: pytest test_candecode.py"""
 import sys, os
 
 import pytest
