@@ -1,7 +1,9 @@
 from datetime import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
 
 class LogFile(db.Model):
     __tablename__ = "log_files"
@@ -10,6 +12,7 @@ class LogFile(db.Model):
     format = db.Column(db.String(8), default="asc")
     frame_count = db.Column(db.Integer, default=0)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Message(db.Model):
     __tablename__ = "messages"

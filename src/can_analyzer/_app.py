@@ -1,19 +1,25 @@
-from .can.api import bp
-from .models import LogFile, Message, db
-
-from flask import Flask, jsonify, redirect, render_template, request, url_for
 import json as _json
 import os
+
+from flask import Flask, jsonify, redirect, render_template, request, url_for
+
 from . import paths
+from .can.api import bp
+from .models import LogFile, Message, db
 
 # Templates and static assets live at <project root>/templates and
 # <project root>/static, next to web/, so resolve them from this file instead
 # of the process working directory.
 
+
 def build_app():
     """Build the application: configuration, database, then routes."""
-    app = Flask(__name__, template_folder=str(paths.TEMPLATES_DIR), static_folder=str(paths.STATIC_DIR))
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(paths.INSTANCE_DIR / "cananalyzer.db")
+    app = Flask(
+        __name__, template_folder=str(paths.TEMPLATES_DIR), static_folder=str(paths.STATIC_DIR)
+    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(
+        paths.INSTANCE_DIR / "cananalyzer.db"
+    )
     app.secret_key = os.environ.get("CANANALYZER_SECRET", "can-analyzer-dev-secret")
     db.init_app(app)
     with app.app_context():
@@ -22,9 +28,13 @@ def build_app():
 
     # Toolbar selection kept per process, and the decoded log of what happened.
     # Templates read this (or Message/LogFile rows), never hard-coded sample data.
-    PAGE_STATE = {"log_name": "drive1.asc", "dbc_name": "vehicle.dbc",
-                  "active_signal": "RPM", "stop_enabled": True,
-                  "log": "buffer empty: upload a log and a DBC to decode"}
+    PAGE_STATE = {
+        "log_name": "drive1.asc",
+        "dbc_name": "vehicle.dbc",
+        "active_signal": "RPM",
+        "stop_enabled": True,
+        "log": "buffer empty: upload a log and a DBC to decode",
+    }
     DATA_DIR = os.environ.get("CANANALYZER_DATA_DIR", str(paths.DATA_DIR))
 
     def _focus():
@@ -40,17 +50,32 @@ def build_app():
     def inject_state():
         """Messages, signals and log rows all come from SQLite + the parse buffers."""
         logs, active_log, flt = _focus()
-        rows = Message.query.filter_by(log_id=active_log).order_by(Message.id).limit(200).all() \
-            if active_log else []
+        rows = (
+            Message.query.filter_by(log_id=active_log).order_by(Message.id).limit(200).all()
+            if active_log
+            else []
+        )
         if flt:
             rows = [m for m in rows if flt in (m.can_id or "").upper()]
-        messages = [{"id": m.id, "t": "%.3f" % (m.ts or 0.0), "can_id": m.can_id,
-                     "data_hex": m.data_hex, "decoded": m.decoded_json or "{}"} for m in rows]
-        messages_note = "" if messages else (
-            "no messages decoded yet: POST a log to /api/logs, then POST a DBC to "
-            "/api/logs/<id>/dbc and decode it")
-        signals = sorted({s for s in
-                          (PAGE_STATE["active_signal"],) if s})
+        messages = [
+            {
+                "id": m.id,
+                "t": "%.3f" % (m.ts or 0.0),
+                "can_id": m.can_id,
+                "data_hex": m.data_hex,
+                "decoded": m.decoded_json or "{}",
+            }
+            for m in rows
+        ]
+        messages_note = (
+            ""
+            if messages
+            else (
+                "no messages decoded yet: POST a log to /api/logs, then POST a DBC to "
+                "/api/logs/<id>/dbc and decode it"
+            )
+        )
+        signals = sorted({s for s in (PAGE_STATE["active_signal"],) if s})
         for m in rows[:20]:
             try:
                 keys = _json.loads(m.decoded_json or "{}")
@@ -60,9 +85,16 @@ def build_app():
         return {
             "app_name": "can-analyzer",
             "data_dir": DATA_DIR,
-            "log_files": [{"id": l.id, "name": l.name, "format": l.format,
-                           "frame_count": l.frame_count or 0, "uploaded_at": l.uploaded_at}
-                          for l in logs],
+            "log_files": [
+                {
+                    "id": l.id,
+                    "name": l.name,
+                    "format": l.format,
+                    "frame_count": l.frame_count or 0,
+                    "uploaded_at": l.uploaded_at,
+                }
+                for l in logs
+            ],
             "log_count": len(logs),
             "messages": messages,
             "messages_note": messages_note,
@@ -80,9 +112,9 @@ def build_app():
     def index():
         """Renders the log named by ?log_id= and the rows kept by ?filter= (see _focus)."""
         logs, active_log, flt = _focus()
-        return render_template("index.html", focus={"log_id": active_log or "",
-                                                    "filter": flt,
-                                                    "logs": len(logs)})
+        return render_template(
+            "index.html", focus={"log_id": active_log or "", "filter": flt, "logs": len(logs)}
+        )
 
     @app.post("/logs")
     def start_log():
@@ -118,14 +150,19 @@ def build_app():
     @app.get("/api/config")
     def api_config():
         """Data directory and accepted log formats, shared by UI and CLI."""
-        return jsonify({"data_dir": DATA_DIR,
-                        "formats": ["asc", "csv"],
-                        "logs": LogFile.query.count(),
-                        "database": app.config["SQLALCHEMY_DATABASE_URI"]})
+        return jsonify(
+            {
+                "data_dir": DATA_DIR,
+                "formats": ["asc", "csv"],
+                "logs": LogFile.query.count(),
+                "database": app.config["SQLALCHEMY_DATABASE_URI"],
+            }
+        )
 
     if __name__ == "__main__":  # python -m web.app  (see Dockerfile CMD)
         app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8000")))
 
     return app
+
 
 app = build_app()

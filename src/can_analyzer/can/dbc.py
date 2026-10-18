@@ -1,14 +1,18 @@
 import re
 
+
 class SignalDef:
-    def __init__(self, name: str, start: int, length: int, scale: float,
-                 offset: float, unit: str = ""):
+    def __init__(
+        self, name: str, start: int, length: int, scale: float, offset: float, unit: str = ""
+    ):
         self.name, self.start, self.length = name, start, length
         self.scale, self.offset, self.unit = scale, offset, unit
+
 
 class MessageDef:
     def __init__(self, can_id: str, name: str, signals: list):
         self.can_id, self.name, self.signals = can_id, name, signals
+
 
 def load_dbc(text):
     msgs = {}
@@ -19,10 +23,12 @@ def load_dbc(text):
         signals = []
         for sg in re.finditer(r"SG_ (\w+) : (\d+)\|(\d+)@(\d)([+-]) \(([^)]+)\)", block.group(0)):
             scale, offset = [float(x) for x in sg.group(6).split(",")]
-            signals.append(SignalDef(sg.group(1), int(sg.group(2)), int(sg.group(3)),
-                                     scale, offset))
+            signals.append(
+                SignalDef(sg.group(1), int(sg.group(2)), int(sg.group(3)), scale, offset)
+            )
         msgs[can_id] = MessageDef(can_id, name, signals)
     return msgs
+
 
 def decode(frame, msg_def):
     data = frame["data"]

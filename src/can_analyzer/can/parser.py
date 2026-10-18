@@ -1,5 +1,6 @@
 import re
 
+
 def parse_asc(path):
     frames = []
     with open(path) as f:
@@ -13,11 +14,18 @@ def parse_asc(path):
                 frames.append({"ts": ts, "can_id": can_id, "data": data})
     return frames
 
+
 def parse_csv(path):
     import csv
+
     frames = []
     with open(path) as f:
         for row in csv.DictReader(f):
-            frames.append({"ts": float(row["ts"]), "can_id": row["can_id"],
-                           "data": bytes.fromhex(row["data"])})
+            frames.append(
+                {
+                    "ts": float(row["ts"]),
+                    "can_id": row["can_id"],
+                    "data": bytes.fromhex(row["data"]),
+                }
+            )
     return frames

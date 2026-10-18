@@ -6,6 +6,7 @@ analysis subcommands run without Flask.  "serve" imports the web application
 lazily inside the subcommand, so `python cli.py --help` exits 0 even when the
 web dependencies are absent.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -13,20 +14,26 @@ import csv
 import json
 import os
 import sys
+
 from . import paths
 
 ROOT = str(paths.PROJECT_ROOT)
 VERSION = "0.1.0"
 
+
 def _parse(path: str, fmt: str) -> list:
     from .can.parser import parse_asc, parse_csv
+
     fmt = fmt or ("csv" if path.lower().endswith(".csv") else "asc")
     return parse_asc(path) if fmt == "asc" else parse_csv(path)
 
+
 def _load_dbc(path: str) -> dict:
     from .can.dbc import load_dbc
+
     with open(path) as fh:
         return load_dbc(fh.read())
+
 
 def cmd_parse(args) -> int:
     frames = _parse(args.file, args.format)
@@ -38,9 +45,14 @@ def cmd_parse(args) -> int:
     for can_id, n in sorted(ids.items()):
         print(f"  0x{can_id}  {n} frame(s)")
     if args.json:
-        print(json.dumps([{"ts": f["ts"], "can_id": f["can_id"],
-                           "data": f["data"].hex()} for f in frames], indent=2))
+        print(
+            json.dumps(
+                [{"ts": f["ts"], "can_id": f["can_id"], "data": f["data"].hex()} for f in frames],
+                indent=2,
+            )
+        )
     return 0
+
 
 def cmd_dbc(args) -> int:
     msgs = _load_dbc(args.file)
@@ -48,9 +60,12 @@ def cmd_dbc(args) -> int:
     for can_id, md in sorted(msgs.items()):
         print(f"  0x{can_id} {md.name}")
         for sig in md.signals:
-            print(f"      {sig.name:<12} start={sig.start:<3} len={sig.length:<3} "
-                  f"scale={sig.scale:<8g} offset={sig.offset:<8g} {sig.unit}")
+            print(
+                f"      {sig.name:<12} start={sig.start:<3} len={sig.length:<3} "
+                f"scale={sig.scale:<8g} offset={sig.offset:<8g} {sig.unit}"
+            )
     return 0
+
 
 def cmd_decode(args) -> int:
     from .can.dbc import decode
@@ -66,8 +81,10 @@ def cmd_decode(args) -> int:
         print(f"error: no DBC message for 0x{frame['can_id']}", file=sys.stderr)
         return 2
     values = decode(frame, md)
-    print(f"frame {args.frame}: t={frame['ts']:.3f}s can_id=0x{frame['can_id']} "
-          f"data={frame['data'].hex()} ({md.name})")
+    print(
+        f"frame {args.frame}: t={frame['ts']:.3f}s can_id=0x{frame['can_id']} "
+        f"data={frame['data'].hex()} ({md.name})"
+    )
     for name, value in values.items():
         print(f"  {name:<12} {value}")
     if args.signal:
@@ -76,6 +93,7 @@ def cmd_decode(args) -> int:
             return 2
         print(f"{args.signal}={values[args.signal]}")
     return 0
+
 
 def cmd_signals(args) -> int:
     from .can.signals import extract
@@ -91,6 +109,7 @@ def cmd_signals(args) -> int:
     for ts, value in series:
         print(f"  {ts:>9.3f}s {value}")
     return 0
+
 
 def cmd_export(args) -> int:
     from .can.dbc import decode
@@ -108,14 +127,18 @@ def cmd_export(args) -> int:
     print(f"wrote {len(frames)} row(s) -> {out}")
     return 0
 
+
 def cmd_serve(args) -> int:
     from ._app import app
+
     app.run(host=args.host, port=args.port, debug=False)
     return 0
 
+
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="can-analyzer",
-                                description="CAN bus analyzer: logs, DBC decode, CSV export.")
+    p = argparse.ArgumentParser(
+        prog="can-analyzer", description="CAN bus analyzer: logs, DBC decode, CSV export."
+    )
     p.add_argument("--version", action="version", version=f"can-analyzer {VERSION}")
     sub = p.add_subparsers(dest="command", required=True)
 
@@ -157,6 +180,7 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--port", type=int, default=8000)
     v.set_defaults(func=cmd_serve)
     return p
+
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)

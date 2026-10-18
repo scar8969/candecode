@@ -1,15 +1,19 @@
+import csv
+import io
+import os
+
+from flask import Blueprint, Response, abort, jsonify, request
+
+from .. import paths
+from ..models import LogFile, Message, db
 from .dbc import decode, load_dbc
 from .parser import parse_asc, parse_csv
-from ..models import LogFile, Message, db
-
-from flask import Blueprint, abort, jsonify, request, Response
-import csv, io, os
-from .. import paths
 
 bp = Blueprint("can", __name__)
 DATA_DIR = str(paths.DATA_DIR)
 _logs = {}  # id -> frames
 _dbcs = {}  # id -> {can_id: MessageDef}
+
 
 @bp.post("/api/logs")
 def upload():
@@ -25,11 +29,13 @@ def upload():
     db.session.add(log)
     db.session.flush()
     for fr in frames:
-        db.session.add(Message(log_id=log.id, ts=fr["ts"], can_id=fr["can_id"],
-                               data_hex=fr["data"].hex()))
+        db.session.add(
+            Message(log_id=log.id, ts=fr["ts"], can_id=fr["can_id"], data_hex=fr["data"].hex())
+        )
     db.session.commit()
     _logs[log.id] = frames
     return jsonify({"id": log.id, "frames": len(frames)})
+
 
 def _log_or_404(raw_id):
     """The LogFile ``raw_id`` names, or a plain 404.
@@ -44,6 +50,7 @@ def _log_or_404(raw_id):
         abort(404)
     return LogFile.query.get_or_404(log_id)
 
+
 @bp.post("/api/logs/<id>/dbc")
 def upload_dbc(id):
     log = _log_or_404(id)
@@ -51,8 +58,8 @@ def upload_dbc(id):
     if not f:
         return jsonify({"error": "no file"}), 400
     _dbcs[log.id] = load_dbc(f.read().decode())
-    return jsonify({"status": "loaded", "id": log.id,
-                    "messages": len(_dbcs[log.id])})
+    return jsonify({"status": "loaded", "id": log.id, "messages": len(_dbcs[log.id])})
+
 
 @bp.get("/api/logs/<id>/messages")
 def messages(id):
@@ -61,10 +68,12 @@ def messages(id):
     q = Message.query.filter_by(log_id=log.id)
     if filt:
         q = q.filter(Message.can_id == filt)
-    rows = [{"ts": m.ts, "can_id": m.can_id, "data": m.data_hex,
-             "decoded": m.decoded_json} for m in q.order_by(Message.id).limit(200).all()]
-    return jsonify({"log_id": log.id, "frames": log.frame_count or 0,
-                    "messages": rows})
+    rows = [
+        {"ts": m.ts, "can_id": m.can_id, "data": m.data_hex, "decoded": m.decoded_json}
+        for m in q.order_by(Message.id).limit(200).all()
+    ]
+    return jsonify({"log_id": log.id, "frames": log.frame_count or 0, "messages": rows})
+
 
 @bp.get("/api/logs/<id>/signals/<name>")
 def signal_series(id, name):
@@ -72,10 +81,8 @@ def signal_series(id, name):
     frames = _logs.get(log.id, [])
     dbc = _dbcs.get(log.id, {})
     if not dbc:
-        note = ("no DBC attached to log %d: POST one to /api/logs/%d/dbc"
-                % (log.id, log.id))
-        return jsonify({"log_id": log.id, "signal": name, "series": [],
-                        "note": note})
+        note = "no DBC attached to log %d: POST one to /api/logs/%d/dbc" % (log.id, log.id)
+        return jsonify({"log_id": log.id, "signal": name, "series": [], "note": note})
     series = []
     for fr in frames:
         md = dbc.get(fr["can_id"])
@@ -83,8 +90,8 @@ def signal_series(id, name):
             vals = decode(fr, md)
             if name in vals:
                 series.append([fr["ts"], vals[name]])
-    return jsonify({"log_id": log.id, "signal": name, "frames": len(frames),
-                    "series": series})
+    return jsonify({"log_id": log.id, "signal": name, "frames": len(frames), "series": series})
+
 
 @bp.get("/api/logs/<id>/export")
 def export(id):
@@ -94,5 +101,8 @@ def export(id):
     w.writerow(["ts", "can_id", "data", "decoded"])
     for m in Message.query.filter_by(log_id=log.id).limit(10000).all():
         w.writerow([m.ts, m.can_id, m.data_hex, m.decoded_json])
-    return Response(buf.getvalue(), mimetype="text/csv",
-                    headers={"Content-Disposition": "attachment; filename=decoded.csv"})
+    return Response(
+        buf.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=decoded.csv"},
+    )
