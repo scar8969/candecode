@@ -14,6 +14,7 @@ import csv
 import json
 import os
 import sys
+from typing import Any
 
 from . import paths
 
@@ -37,7 +38,7 @@ def _load_dbc(path: str) -> dict:
 
 def cmd_parse(args) -> int:
     frames = _parse(args.file, args.format)
-    ids = {}
+    ids: dict[str, Any] = {}
     for f in frames:
         ids[f["can_id"]] = ids.get(f["can_id"], 0) + 1
     span = (frames[0]["ts"], frames[-1]["ts"]) if frames else (0.0, 0.0)

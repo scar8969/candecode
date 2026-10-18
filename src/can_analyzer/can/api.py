@@ -1,6 +1,7 @@
 import csv
 import io
 import os
+from typing import Any
 
 from flask import Blueprint, Response, abort, jsonify, request
 
@@ -11,8 +12,8 @@ from .parser import parse_asc, parse_csv
 
 bp = Blueprint("can", __name__)
 DATA_DIR = str(paths.DATA_DIR)
-_logs = {}  # id -> frames
-_dbcs = {}  # id -> {can_id: MessageDef}
+_logs: dict[str, Any] = {}  # id -> frames
+_dbcs: dict[str, Any] = {}  # id -> {can_id: MessageDef}
 
 
 @bp.post("/api/logs")
@@ -22,7 +23,7 @@ def upload():
         return jsonify({"error": "no file"}), 400
     fmt = request.form.get("format", "asc")
     os.makedirs(DATA_DIR, exist_ok=True)
-    path = os.path.join(DATA_DIR, f.filename)
+    path = os.path.join(DATA_DIR, f.filename or "upload")
     f.save(path)
     frames = parse_asc(path) if fmt == "asc" else parse_csv(path)
     log = LogFile(name=f.filename, format=fmt, frame_count=len(frames))

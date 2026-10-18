@@ -75,13 +75,13 @@ def build_app():
                 "/api/logs/<id>/dbc and decode it"
             )
         )
-        signals = sorted({s for s in (PAGE_STATE["active_signal"],) if s})
+        signals = sorted({str(s) for s in (PAGE_STATE["active_signal"],) if s})
         for m in rows[:20]:
             try:
                 keys = _json.loads(m.decoded_json or "{}")
             except ValueError:
                 keys = {}
-            signals = sorted(set(signals) | set(keys.keys()))
+            signals = sorted(set(signals) | {str(k) for k in keys})
         return {
             "app_name": "can-analyzer",
             "data_dir": DATA_DIR,
