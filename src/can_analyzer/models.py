@@ -1,6 +1,6 @@
-from datetime import datetime
-
 from flask_sqlalchemy import SQLAlchemy
+
+from .clock import utcnow
 
 db = SQLAlchemy()
 
@@ -11,7 +11,7 @@ class LogFile(db.Model):
     name = db.Column(db.String(128), default="")
     format = db.Column(db.String(8), default="asc")
     frame_count = db.Column(db.Integer, default=0)
-    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    uploaded_at = db.Column(db.DateTime, default=utcnow)
 
 
 class Message(db.Model):
