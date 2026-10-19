@@ -4,7 +4,7 @@ Every line below was produced by a command run against this exact checkout, on t
 
 | | |
 | --- | --- |
-| Generated | 2026-10-19 02:26 |
+| Generated | 2026-10-19 09:42 |
 | Python | 3.14.7 |
 | Platform | Windows 11 |
 
@@ -15,7 +15,7 @@ python -m pytest -q
 ```
 
 - exit code **0**
-- 25 passed in 1.21s
+- 25 passed in 1.30s
 
 ## Static gates
 
@@ -37,6 +37,25 @@ The application was imported through `wsgi.py` and each GET path declared in `op
 | 404 | `/api/logs/1/export` | 51 | application/json |
 
 3 paths walked, 0 of them raised or answered 5xx.
+
+## CLI
+
+```
+usage: can-analyzer [-h] [--version]
+                    {parse,dbc,decode,signals,export,serve} ...
+
+CAN bus analyzer: logs, DBC decode, CSV export.
+
+positional arguments:
+  {parse,dbc,decode,signals,export,serve}
+    parse               summarise an ASC or CSV candump log
+    dbc                 list the messages and signals in a DBC file
+    decode              decode a single frame with a DBC file
+    signals             extract one signal series over the whole log
+    export              export decoded frames to CSV
+    serve               run the Flask CAN analyzer UI
+
+```
 
 ## Screenshots
 
